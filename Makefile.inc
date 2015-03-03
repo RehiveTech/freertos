@@ -9,9 +9,9 @@ FREERTOS_SRC  ?= $(FREERTOS_ROOT)/Source
 HEAP ?= heap_1
 
 CFLAGS_include := -I$(FREERTOS_SRC)/include -I$(FREERTOS_SRC)/portable/GCC/ARM_CA9
-CFLAGS_port    := -march=armv7-a -mtune=cortex-a9 -mfpu=neon-vfpv4 -mfloat-abi=hard -O2 -g
+CFLAGS_port    := -march=armv7-a -mtune=cortex-a9 -mfpu=neon-vfpv4 -mfloat-abi=softfp -O2 -g
 CFLAGS          = -std=gnu99 $(CFLAGS_include) $(CFLAGS_port) $(CFLAGS_EXTRA)
-LDFLAGS_port   := -march=armv7-a -mtune=cortex-a9 -mfpu=neon-vfpv4 -mfloat-abi=hard -O2 -g
+LDFLAGS_port   := -march=armv7-a -mtune=cortex-a9 -mfpu=neon-vfpv4 -mfloat-abi=softfp -O2 -g
 LDFLAGS         = -std=gnu99 $(LDFLAGS_port) $(LDFLAGS_EXTRA)
 
 FREERTOS_OBJ   := croutine.o event_groups.o list.o queue.o tasks.o timers.o
