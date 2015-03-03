@@ -28,10 +28,6 @@ clean-libsocfpga:
 distclean-libsocfpga:
 	$(RM) libsocfpga.a
 
-$(foreach obj,$(SOCFPGA_OBJ),\
-	$(eval $(call build_obj,\
-		$(obj:%=$(SOCFPGA_BSP)/SoCSupport/%),\
-		$(obj:%.o=$(SOCFPGA_BSP)/SoCSupport/%.c))))
 clean: clean-libsocfpga
 distclean: distclean-libsocfpga
 
@@ -42,9 +38,5 @@ clean-libhw:
 distclean-libhw:
 	$(RM) libhw.a
 
-$(foreach obj,$(HWLIB_OBJ),\
-	$(eval $(call build_obj,\
-		$(obj:%=$(SOCFPGA_BSP)/HardwareLibrary/%),\
-		$(obj:%.o=$(SOCFPGA_BSP)/HardwareLibrary/%.c))))
 clean: clean-libhw
 distclean: distclean-libhw
