@@ -8,9 +8,9 @@ CFLAGS_EXTRA := $(BSP_INC) -I$(SOCFPGA_SRC)
 LDFLAGS_EXTRA := -Tlscript.ld
 
 all: test
-test: test.o printf-stdarg.o libfreertos.a libsocfpga.a libhw.a
+test: test.o printf-stdarg.o serial.o libfreertos.a libsocfpga.a libhw.a
 test-clean:
-	$(RM) test.o printf-stdarg.o
+	$(RM) test.o printf-stdarg.o serial.o
 clean: test-clean
 
 SOCFPGA_OBJ  := cache_support.o fpga_support.o mmu_support.o uart0_support.o
