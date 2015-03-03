@@ -35,7 +35,7 @@ port.o: $(FREERTOS_SRC)/portable/GCC/ARM_CA9/port.c
 clean: clean-libfreertos
 clean-libfreertos:
 	$(RM) $(FREERTOS_OBJ)
-	$(RM) heap.o
+	$(RM) heap.o port.o
 distclean: clean distclean-libfreertos
 distclean-libfreertos:
 	$(RM) libfreertos.a

@@ -9,6 +9,9 @@ LDFLAGS_EXTRA := -Tlscript.ld
 
 all: test
 test: test.o printf-stdarg.o libfreertos.a libsocfpga.a libhw.a
+test-clean:
+	$(RM) test.o printf-stdarg.o
+clean: test-clean
 
 SOCFPGA_OBJ  := cache_support.o fpga_support.o mmu_support.o uart0_support.o
 HWLIB_OBJ    := alt_16550_uart.o alt_address_space.o alt_bridge_manager.o \
