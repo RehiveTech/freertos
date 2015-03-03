@@ -20,7 +20,7 @@ LDFLAGS         = -std=gnu99 $(LDFLAGS_port) $(LDFLAGS_EXTRA)
 FREERTOS_OBJ   := croutine.o event_groups.o list.o queue.o tasks.o timers.o
 
 all:
-libfreertos.a: $(FREERTOS_OBJ) heap.o port.o
+libfreertos.a: $(FREERTOS_OBJ) heap.o port.o portASM.o
 	$(AR) rcs $@ $^
 
 define build_obj
@@ -34,11 +34,13 @@ heap.o: $(FREERTOS_SRC)/portable/MemMang/$(HEAP).c
 	$(CC) $(CFLAGS) -c -o $@ $<
 port.o: $(FREERTOS_SRC)/portable/GCC/ARM_CA9/port.c
 	$(CC) $(CFLAGS) -c -o $@ $<
+portASM.o: $(FREERTOS_SRC)/portable/GCC/ARM_CA9/portASM.S
+	$(AS) $(ASFLAGS) -c -o $@ $<
 
 clean: clean-libfreertos
 clean-libfreertos:
 	$(RM) $(FREERTOS_OBJ)
-	$(RM) heap.o port.o
+	$(RM) heap.o port.o portASM.o
 distclean: clean distclean-libfreertos
 distclean-libfreertos:
 	$(RM) libfreertos.a
