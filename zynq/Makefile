@@ -21,7 +21,8 @@ ZYNQ_OBJ  := _exit.o _open.o _sbrk.o abort.o close.o errno.o fcntl.o \
              unlink.o usleep.o vectors.o write.o xil_assert.o xil_cache.o \
              xil_exception.o xil_io.o xil_misc_psreset_api.o xil_mmu.o \
              xil_printf.o xl2cc_counter.o xpm_counter.o xtime_l.o \
-	     cpu_init.o asm_vectors.o boot.o translation_table.o
+	     cpu_init.o asm_vectors.o boot.o translation_table.o \
+	     xil-crt0.o
 SCU_OBJ := xscugic.o xscugic_g.o xscugic_hw.o xscugic_intr.o xscugic_sinit.o
 SCUWDT_OBJ := xscuwdt.o xscuwdt_g.o xscuwdt_sinit.o
 UARTPS_OBJ := xuartps_g.o xuartps_hw.o xuartps_intr.o xuartps.o xuartps_options.o  xuartps_sinit.o
