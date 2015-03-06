@@ -6,7 +6,8 @@ BSP_INC   := -I$(ZYNQ_BSP)/ps7_cortexa9_0/include
 
 CFLAGS_EXTRA := $(BSP_INC) -I$(ZYNQ_SRC)
 ASFLAGS_EXTRA := $(BSP_INC) -I$(ZYNQ_SRC)
-LDFLAGS_EXTRA := -Tlscript.ld
+LDFLAGS_EXTRA += -Xlinker -Tlscript.ld
+LDFLAGS_EXTRA += -Xlinker --gc-sections
 
 all: test
 test: test.o printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o libfreertos.a libhw.a libzynq.a

@@ -5,7 +5,11 @@ SOCFPGA_BSP  := $(FREERTOS_ROOT)/socfpga/bsp
 BSP_INC      := -I$(SOCFPGA_BSP)/SoCSupport/include -I$(SOCFPGA_BSP)/HardwareLibrary/include
 
 CFLAGS_EXTRA := $(BSP_INC) -I$(SOCFPGA_SRC)
-LDFLAGS_EXTRA := -Tlscript.ld
+CFLAGS_EXTRA += -DALT_INT_PROVISION_VECTOR_SUPPORT=0
+LDFLAGS_EXTRA := -Xlinker -Tlscript.ld
+LDFLAGS_EXTRA += -Xlinker --gc-sections
+LDFLAGS_EXTRA += -Xlinker --defsym=__cs3_isr_irq=FreeRTOS_IRQ_Handler
+LDFLAGS_EXTRA += -Xlinker --defsym=__cs3_isr_swi=FreeRTOS_SWI_Handler
 
 all: test
 test: test.o printf-stdarg.o serial.o libfreertos.a libsocfpga.a libhw.a
