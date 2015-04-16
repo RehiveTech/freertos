@@ -28,30 +28,17 @@ compile-$(1): $(1)
 $(1): $(1).o $(2)
 $(1): printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
 $(1): libfreertos.a
-
-$(1): $(ZYNQ_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/standalone_v4_1/src/%) \
-      $(SCU_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scugic_v2_1/src/%) \
-      $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%) \
-      $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%) \
-      $(SCUTMR_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scutimer_v2_0/src/%) \
-      $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
-clean-$(1)-zynq:
-	$(RM) $(ZYNQ_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/standalone_v4_1/src/%)
-	$(RM) $(SCU_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scugic_v2_1/src/%)
-	$(RM) $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%)
-	$(RM) $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%)
-	$(RM) $(SCUTMR_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scutimer_v2_0/src/%)
-	$(RM) $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
-
-$(1): $(DRIVERS)
+$(1): $$(ZYNQ_OBJ)
+$(1): $$(DRIVERS)
 
 finish-$(1): BOOT.BIN
 	@echo "Build of $(1) successful" >&2
 	$(SIZE) userapp.elf
 	ls -l $$<
-clean-$(1): clean-$(1)-zynq
+clean-$(1):
 	$(RM) $(1).o $(2)
 	$(RM) printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
+	$(RM) $(ZYNQ_OBJ)
 distclean-$(1): clean-$(1)
 	$(RM) $(1) userapp.elf
 
@@ -80,7 +67,7 @@ distclean: distclean-BOOT.BIN
 
 #####################################
 
-ZYNQ_OBJ  := _exit.o _open.o _sbrk.o abort.o close.o errno.o fcntl.o \
+ZYNQ_CORE_OBJ := _exit.o _open.o _sbrk.o abort.o close.o errno.o fcntl.o \
              fstat.o getpid.o inbyte.o isatty.o kill.o lseek.o open.o \
              outbyte.o print.o putnum.o read.o sbrk.o sleep.o smc.o uart.o \
              unlink.o usleep.o vectors.o write.o xil_assert.o xil_cache.o \
@@ -93,6 +80,13 @@ SCUWDT_OBJ := xscuwdt.o xscuwdt_g.o xscuwdt_sinit.o
 UARTPS_OBJ := xuartps_g.o xuartps_hw.o xuartps_intr.o xuartps.o xuartps_options.o  xuartps_sinit.o
 SCUTMR_OBJ := xscutimer.o xscutimer_g.o xscutimer_sinit.o
 DEVCFG_OBJ := xdevcfg.o xdevcfg_g.o xdevcfg_hw.o xdevcfg_intr.o xdevcfg_sinit.o
+
+ZYNQ_OBJ = $(ZYNQ_CORE_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/standalone_v4_1/src/%) \
+      $(SCU_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scugic_v2_1/src/%) \
+      $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%) \
+      $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%) \
+      $(SCUTMR_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scutimer_v2_0/src/%) \
+      $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
 
 #####################################
 
