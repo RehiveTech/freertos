@@ -140,7 +140,7 @@ int main( void )
 	/* Configure the hardware ready to run the demo. */
 	prvSetupHardware();
 
-	printf("Started Successfully\n");
+	printf("Started Successfully\n\r");
 	while(1)
 		portNOP();
 
