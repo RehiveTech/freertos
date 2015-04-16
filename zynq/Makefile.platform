@@ -21,9 +21,9 @@ define make_project
 all: build-$(1)
 build-$(1): prepare-$(1) compile-$(1) finish-$(1)
 prepare-$(1):
-	@echo "Building FreeRTOS application $(1)" >&2
+	$(Q) echo "Building FreeRTOS application $(1)" >&2
 compile-$(1): $(1)
-	ln -vf $(1) userapp.elf
+	$(Q) ln -vf $(1) userapp.elf
 
 $(1): $(1).o $(2)
 $(1): printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
@@ -32,35 +32,35 @@ $(1): $$(ZYNQ_OBJ)
 $(1): $$(DRIVERS)
 
 finish-$(1): BOOT.BIN
-	@echo "Build of $(1) successful" >&2
-	$(SIZE) userapp.elf
-	ls -l $$<
+	$(Q) echo "Build of $(1) successful" >&2
+	$(Q) $(SIZE) userapp.elf
+	$(Q) ls -l $$<
 clean-$(1):
-	$(RM) $(1).o $(2)
-	$(RM) printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
-	$(RM) $(ZYNQ_OBJ)
+	$(Q) $(RM) $(1).o $(2)
+	$(Q) $(RM) printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
+	$(Q) $(RM) $(ZYNQ_OBJ)
 distclean-$(1): clean-$(1)
-	$(RM) $(1) userapp.elf
+	$(Q) $(RM) $(1) userapp.elf
 
 clean: clean-$(1)
 distclean: distclean-$(1)
 endef
 
 BOOT.BIN: system.bif
-	bootgen -image system.bif -w on -o i $@
+	$(Q) bootgen -image system.bif -w on -o i $@
 system.bif: userapp.elf fsbl.elf
-	echo "romfile:"              > $@
-	echo "{"                    >> $@
-	echo "[bootloader]fsbl.elf" >> $@
-	echo "userapp.elf"          >> $@
-	echo "}"                    >> $@
+	$(Q) echo "romfile:"              > $@
+	$(Q) echo "{"                    >> $@
+	$(Q) echo "[bootloader]fsbl.elf" >> $@
+	$(Q) echo "userapp.elf"          >> $@
+	$(Q) echo "}"                    >> $@
 fsbl.elf: fsbl/$(FSBL).elf
-	ln -vf $< $@
+	$(Q) ln -vf $< $@
 
 clean-BOOT.BIN:
-	$(RM) system.bif fsbl.elf system.mem
+	$(Q) $(RM) system.bif fsbl.elf system.mem
 distclean-BOOT.BIN: clean-BOOT.BIN
-	$(RM) BOOT.BIN
+	$(Q) $(RM) BOOT.BIN
 
 clean: clean-BOOT.BIN
 distclean: distclean-BOOT.BIN
@@ -103,66 +103,66 @@ CONFIG_DEVCFG ?= y
 CONFIG_UARTPS ?= y
 
 libscuwdt.a: $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%)
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 clean-scuwdt:
-	$(RM) $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%)
+	$(Q) $(RM) $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%)
 distclean-scuwdt: clean-scuwdt
-	$(RM) libscuwdt.a
+	$(Q) $(RM) libscuwdt.a
 
 ifeq ($(CONFIG_SCUWDT),y)
 DRIVERS += libscuwdt.a
 endif
 
 libdevcfg.a: $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 clean-devcfg:
-	$(RM) $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
+	$(Q) $(RM) $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
 distclean-devcfg: clean-devcfg
-	$(RM) libdevcfg.a
+	$(Q) $(RM) libdevcfg.a
 
 ifeq ($(CONFIG_DEVCFG),y)
 DRIVERS += libdevcfg.a
 endif
 
 libuartps.a: $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%)
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 clean-uartps:
-	$(RM) $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%)
+	$(Q) $(RM) $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%)
 distclean-uartps: clean-uartps
-	$(RM) libuartps.a
+	$(Q) $(RM) libuartps.a
 
 ifeq ($(CONFIG_UARTPS),y)
 DRIVERS += libuartps.a
 endif
 
 libusbps.a: $(USBPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/usbps_v2_1/src/%)
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 clean-usbps:
-	$(RM) $(USBPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/usbps_v2_1/src/%)
+	$(Q) $(RM) $(USBPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/usbps_v2_1/src/%)
 distclean-usbps: clean-usbps
-	$(RM) libusbps.a
+	$(Q) $(RM) libusbps.a
 
 ifeq ($(CONFIG_USBPS),y)
 DRIVERS += libusbps.a
 endif
 
 libdmaps.a: $(DMAPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/dmaps_v2_0/src/%)
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 clean-dmaps:
-	$(RM) $(DMAPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/dmaps_v2_0/src/%)
+	$(Q) $(RM) $(DMAPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/dmaps_v2_0/src/%)
 distclean-dmaps: clean-dmaps
-	$(RM) libdmaps.a
+	$(Q) $(RM) libdmaps.a
 
 ifeq ($(CONFIG_DMAPS),y)
 DRIVERS += libdmaps.a
 endif
 
 libgpiops.a: $(GPIOPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/gpiops_v2_1/src/%)
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 clean-gpiops:
-	$(RM) $(GPIOPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/gpiops_v2_1/src/%)
+	$(Q) $(RM) $(GPIOPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/gpiops_v2_1/src/%)
 distclean-gpiops: clean-gpiops
-	$(RM) libgpiops.a
+	$(Q) $(RM) libgpiops.a
 
 ifeq ($(CONFIG_GPIOPS),y)
 DRIVERS += libgpiops.a
@@ -180,55 +180,55 @@ DRIVERS += libsdps.a
 endif
 
 libemacps.a: $(EMACPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/emacps_v2_0/src/%)
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 clean-emacps:
-	$(RM) $(EMACPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/emacps_v2_0/src/%)
+	$(Q) $(RM) $(EMACPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/emacps_v2_0/src/%)
 distclean-emacps: clean-emacps
-	$(RM) libemacps.a
+	$(Q) $(RM) libemacps.a
 
 ifeq ($(CONFIG_EMACPS),y)
 DRIVERS += libemacps.a
 endif
 
 libqspips.a: $(QSPIPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/qspips_v3_0/src/%)
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 clean-qspips:
-	$(RM) $(QSPIPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/qspips_v3_0/src/%)
+	$(Q) $(RM) $(QSPIPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/qspips_v3_0/src/%)
 distclean-qspips: clean-qspips
-	$(RM) libqspips.a
+	$(Q) $(RM) libqspips.a
 
 ifeq ($(CONFIG_QSPIPS),y)
 DRIVERS += libqspips.a
 endif
 
 libttcps.a: $(TTCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/ttcps_v2_0/src/%)
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 clean-ttcps:
-	$(RM) $(TTCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/ttcps_v2_0/src/%)
+	$(Q) $(RM) $(TTCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/ttcps_v2_0/src/%)
 distclean-ttcps: clean-ttcps
-	$(RM) libttcps.a
+	$(Q) $(RM) libttcps.a
 
 ifeq ($(CONFIG_TTCPS),y)
 DRIVERS += libttcps.a
 endif
 
 libxadcps.a: $(XADCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/xadcps_v2_0/src/%)
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 clean-xadcps:
-	$(RM) $(XADCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/xadcps_v2_0/src/%)
+	$(Q) $(RM) $(XADCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/xadcps_v2_0/src/%)
 distclean-xadcps: clean-xadcps
-	$(RM) libxadcps.a
+	$(Q) $(RM) libxadcps.a
 
 ifeq ($(CONFIG_XADCPS),y)
 DRIVERS += libxadcps.a
 endif
 
 libiicps.a: $(IICPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/iicps_v2_1/src/%)
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 clean-iicps:
-	$(RM) $(IICPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/iicps_v2_1/src/%)
+	$(Q) $(RM) $(IICPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/iicps_v2_1/src/%)
 distclean-iicps: clean-iicps
-	$(RM) libiicps.a
+	$(Q) $(RM) libiicps.a
 
 ifeq ($(CONFIG_IICPS),y)
 DRIVERS += libiicps.a
