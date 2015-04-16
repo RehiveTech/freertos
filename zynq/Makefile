@@ -9,9 +9,11 @@ ASFLAGS_EXTRA := $(BSP_INC) -I$(ZYNQ_SRC)
 LDFLAGS_EXTRA += -Xlinker -Tlscript.ld
 LDFLAGS_EXTRA += -Xlinker --gc-sections
 
-all: test
-test: test.o printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o libfreertos.a libzynq.a $(DRIVERS)
-clean-test:
+all: build-test
+build-test: test
+	$(SIZE) $<
+test: test.o printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o libfreertos.a
+clean-test: clean-test-zynq
 	$(RM) test.o printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
 clean: clean-test
 
@@ -31,25 +33,19 @@ UARTPS_OBJ := xuartps_g.o xuartps_hw.o xuartps_intr.o xuartps.o xuartps_options.
 SCUTMR_OBJ := xscutimer.o xscutimer_g.o xscutimer_sinit.o
 DEVCFG_OBJ := xdevcfg.o xdevcfg_g.o xdevcfg_hw.o xdevcfg_intr.o xdevcfg_sinit.o
 
-libzynq.a: $(ZYNQ_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/standalone_v4_1/src/%) \
-           $(SCU_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scugic_v2_1/src/%) \
-           $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%) \
-           $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%) \
-           $(SCUTMR_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scutimer_v2_0/src/%) \
-           $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
-	$(AR) rcs $@ $^
-clean-libzynq:
+test: $(ZYNQ_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/standalone_v4_1/src/%) \
+      $(SCU_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scugic_v2_1/src/%) \
+      $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%) \
+      $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%) \
+      $(SCUTMR_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scutimer_v2_0/src/%) \
+      $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
+clean-test-zynq:
 	$(RM) $(ZYNQ_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/standalone_v4_1/src/%)
 	$(RM) $(SCU_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scugic_v2_1/src/%)
 	$(RM) $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%)
 	$(RM) $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%)
 	$(RM) $(SCUTMR_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scutimer_v2_0/src/%)
 	$(RM) $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
-distclean-libzynq: clean-libzynq
-	$(RM) libzynq.a
-
-clean: clean-libzynq
-distclean: distclean-libzynq
 
 #####################################
 
@@ -162,6 +158,8 @@ distclean-iicps: clean-iicps
 ifdef CONFIG_IICPS
 DRIVERS += libiicps.a
 endif
+
+test: $(DRIVERS)
 
 clean-drivers: clean-usbps clean-dmaps clean-gpiops clean-sdps clean-emacps \
 		clean-qspips clean-ttcps clean-xadcps clean-iicps
