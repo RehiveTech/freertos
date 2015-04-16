@@ -3,6 +3,8 @@ CC = $(CROSS)gcc
 AS = $(CROSS)as
 LD = $(CROSS)ld
 AR = $(CROSS)ar
+SIZE = $(CROSS)size
+OBJCOPY = $(CROSS)objcopy
 
 FREERTOS_ROOT ?= $(PWD)/..
 FREERTOS_SRC  ?= $(FREERTOS_ROOT)/Source
@@ -36,6 +38,11 @@ port.o: $(FREERTOS_SRC)/portable/GCC/ARM_CA9/port.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 portASM.o: $(FREERTOS_SRC)/portable/GCC/ARM_CA9/portASM.S
 	$(AS) $(ASFLAGS) -c -o $@ $<
+
+%.bin: %
+	$(OBJCOPY) -O binary $< $@
+%.bin: %.elf
+	$(OBJCOPY) -O binary $< $@
 
 clean: clean-libfreertos
 clean-libfreertos:

@@ -9,11 +9,42 @@ ASFLAGS_EXTRA := $(BSP_INC) -I$(ZYNQ_SRC)
 LDFLAGS_EXTRA += -Xlinker -Tlscript.ld
 LDFLAGS_EXTRA += -Xlinker --gc-sections
 
-all: test
-test: test.o printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o libfreertos.a libhw.a libzynq.a
-clean-test:
+FSBL ?= zedboard
+
+all: build-test
+build-test: test.elf BOOT.BIN
+	$(SIZE) $<
+test: test.o printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o libfreertos.a
+test.elf: test
+	ln -vf $< $@
+clean-test: clean-test-zynq
 	$(RM) test.o printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
+distclean-test:
+	$(RM) test.elf test
+
 clean: clean-test
+distclean: distclean-test
+
+BOOT.BIN: system.bif
+	bootgen -image system.bif -w on -o i $@
+system.bif: test.elf fsbl.elf
+	echo "romfile:"              > $@
+	echo "{"                    >> $@
+	echo "[bootloader]fsbl.elf" >> $@
+	echo "test.elf"             >> $@
+	echo "}"                    >> $@
+fsbl.elf: fsbl/$(FSBL).elf
+	ln -vf $< $@
+
+clean-BOOT.BIN:
+	$(RM) system.bif fsbl.elf system.mem
+distclean-BOOT.BIN: clean-BOOT.BIN
+	$(RM) BOOT.BIN
+
+clean: clean-BOOT.BIN
+distclean: distclean-BOOT.BIN
+
+#####################################
 
 ZYNQ_OBJ  := _exit.o _open.o _sbrk.o abort.o close.o errno.o fcntl.o \
              fstat.o getpid.o inbyte.o isatty.o kill.o lseek.o open.o \
@@ -27,10 +58,27 @@ SCU_OBJ := xscugic.o xscugic_g.o xscugic_hw.o xscugic_intr.o xscugic_sinit.o
 SCUWDT_OBJ := xscuwdt.o xscuwdt_g.o xscuwdt_sinit.o
 UARTPS_OBJ := xuartps_g.o xuartps_hw.o xuartps_intr.o xuartps.o xuartps_options.o  xuartps_sinit.o
 SCUTMR_OBJ := xscutimer.o xscutimer_g.o xscutimer_sinit.o
+DEVCFG_OBJ := xdevcfg.o xdevcfg_g.o xdevcfg_hw.o xdevcfg_intr.o xdevcfg_sinit.o
+
+test: $(ZYNQ_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/standalone_v4_1/src/%) \
+      $(SCU_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scugic_v2_1/src/%) \
+      $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%) \
+      $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%) \
+      $(SCUTMR_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scutimer_v2_0/src/%) \
+      $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
+clean-test-zynq:
+	$(RM) $(ZYNQ_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/standalone_v4_1/src/%)
+	$(RM) $(SCU_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scugic_v2_1/src/%)
+	$(RM) $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%)
+	$(RM) $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%)
+	$(RM) $(SCUTMR_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scutimer_v2_0/src/%)
+	$(RM) $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
+
+#####################################
+
 USBPS_OBJ  := xusbps_endpoint.o xusbps_g.o xusbps_hw.o xusbps_intr.o xusbps.o xusbps_sinit.o
 GPIOPS_OBJ := xgpiops.o xgpiops_g.o xgpiops_hw.o xgpiops_intr.o xgpiops_sinit.o
 DMAPS_OBJ  := xdmaps.o xdmaps_g.o xdmaps_hw.o xdmaps_sinit.o
-DEVCFG_OBJ := xdevcfg.o xdevcfg_g.o xdevcfg_hw.o xdevcfg_intr.o xdevcfg_sinit.o
 SDPS_OBJ   := xsdps.o xsdps_g.o xsdps_options.o xsdps_sinit.o
 EMACPS_OBJ := xemacps.o xemacps_bdring.o xemacps_control.o xemacps_g.o xemacps_hw.o xemacps_intr.o xemacps_sinit.o
 QSPIPS_OBJ := xqspips.o xqspips_g.o xqspips_hw.o xqspips_options.o xqspips_sinit.o
@@ -39,48 +87,111 @@ IICPS_OBJ  := xiicps_g.o xiicps_hw.o xiicps_intr.o xiicps_options.o xiicps_sinit
 TTCPS_OBJ  := xttcps.o xttcps_g.o xttcps_options.o xttcps_sinit.o
 XADCPS_OBJ := xadcps.o xadcps_g.o xadcps_intr.o xadcps_sinit.o
 
-libzynq.a: $(ZYNQ_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/standalone_v4_1/src/%)
+libusbps.a: $(USBPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/usbps_v2_1/src/%)
 	$(AR) rcs $@ $^
-clean-libzynq:
-	$(RM) $(ZYNQ_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/standalone_v4_1/src/%)
-distclean-libzynq:
-	$(RM) libzynq.a
-
-clean: clean-libzynq
-distclean: distclean-libzynq
-
-libhw.a: $(SCU_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scugic_v2_1/src/%) \
-         $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%) \
-         $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%) \
-         $(SCUTMR_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scutimer_v2_0/src/%) \
-         $(USBPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/usbps_v2_1/src/%) \
-         $(GPIOPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/gpiops_v2_1/src/%) \
-         $(DMAPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/dmaps_v2_0/src/%) \
-         $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%) \
-         $(SDPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/sdps_v2_1/src/%) \
-         $(EMACPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/emacps_v2_0/src/%) \
-         $(QSPIPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/qspips_v3_0/src/%) \
-         $(TTCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/ttcps_v2_0/src/%) \
-         $(XADCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/xadcps_v2_0/src/%) \
-         $(IICPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/iicps_v2_1/src/%)
-	$(AR) rcs $@ $^
-clean-libhw:
-	$(RM) $(SCU_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scugic_v2_1/src/%)
-	$(RM) $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%)
-	$(RM) $(UARTPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/uartps_v2_1/src/%)
-	$(RM) $(SCUTMR_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scutimer_v2_0/src/%)
+clean-usbps:
 	$(RM) $(USBPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/usbps_v2_1/src/%)
-	$(RM) $(GPIOPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/gpiops_v2_1/src/%)
-	$(RM) $(DMAPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/dmaps_v2_0/src/%)
-	$(RM) $(DEVCFG_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/devcfg_v3_1/src/%)
-	$(RM) $(SDPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/sdps_v2_1/src/%)
-	$(RM) $(EMACPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/emacps_v2_0/src/%)
-	$(RM) $(QSPIPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/qspips_v3_0/src/%)
-	$(RM) $(TTCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/ttcps_v2_0/src/%)
-	$(RM) $(XADCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/xadcps_v2_0/src/%)
-	$(RM) $(IICPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/iicps_v2_1/src/%)
-distclean-libhw:
-	$(RM) libhw.a
+distclean-usbps: clean-usbps
+	$(RM) libusbps.a
 
-clean: clean-libhw
-distclean: distclean-libhw
+ifdef CONFIG_USBPS
+DRIVERS += libusbps.a
+endif
+
+libdmaps.a: $(DMAPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/dmaps_v2_0/src/%)
+	$(AR) rcs $@ $^
+clean-dmaps:
+	$(RM) $(DMAPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/dmaps_v2_0/src/%)
+distclean-dmaps: clean-dmaps
+	$(RM) libdmaps.a
+
+ifdef CONFIG_DMAPS
+DRIVERS += libdmaps.a
+endif
+
+libgpiops.a: $(GPIOPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/gpiops_v2_1/src/%)
+	$(AR) rcs $@ $^
+clean-gpiops:
+	$(RM) $(GPIOPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/gpiops_v2_1/src/%)
+distclean-gpiops: clean-gpiops
+	$(RM) libgpiops.a
+
+ifdef CONFIG_GPIOPS
+DRIVERS += libgpiops.a
+endif
+
+libsdps.a: $(SDPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/sdps_v2_1/src/%)
+	$(AR) rcs $@ $^
+clean-sdps:
+	$(RM) $(SDPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/sdps_v2_1/src/%)
+distclean-sdps: clean-sdps
+	$(RM) libsdps.a
+
+ifdef CONFIG_SDPS
+DRIVERS += libsdps.a
+endif
+
+libemacps.a: $(EMACPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/emacps_v2_0/src/%)
+	$(AR) rcs $@ $^
+clean-emacps:
+	$(RM) $(EMACPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/emacps_v2_0/src/%)
+distclean-emacps: clean-emacps
+	$(RM) libemacps.a
+
+ifdef CONFIG_EMACPS
+DRIVERS += libemacps.a
+endif
+
+libqspips.a: $(QSPIPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/qspips_v3_0/src/%)
+	$(AR) rcs $@ $^
+clean-qspips:
+	$(RM) $(QSPIPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/qspips_v3_0/src/%)
+distclean-qspips: clean-qspips
+	$(RM) libqspips.a
+
+ifdef CONFIG_QSPIPS
+DRIVERS += libqspips.a
+endif
+
+libttcps.a: $(TTCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/ttcps_v2_0/src/%)
+	$(AR) rcs $@ $^
+clean-ttcps:
+	$(RM) $(TTCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/ttcps_v2_0/src/%)
+distclean-ttcps: clean-ttcps
+	$(RM) libttcps.a
+
+ifdef CONFIG_TTCPS
+DRIVERS += libttcps.a
+endif
+
+libxadcps.a: $(XADCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/xadcps_v2_0/src/%)
+	$(AR) rcs $@ $^
+clean-xadcps:
+	$(RM) $(XADCPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/xadcps_v2_0/src/%)
+distclean-xadcps: clean-xadcps
+	$(RM) libxadcps.a
+
+ifdef CONFIG_XADCPS
+DRIVERS += libxadcps.a
+endif
+
+libiicps.a: $(IICPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/iicps_v2_1/src/%)
+	$(AR) rcs $@ $^
+clean-iicps:
+	$(RM) $(IICPS_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/iicps_v2_1/src/%)
+distclean-iicps: clean-iicps
+	$(RM) libiicps.a
+
+ifdef CONFIG_IICPS
+DRIVERS += libiicps.a
+endif
+
+test: $(DRIVERS)
+
+clean-drivers: clean-usbps clean-dmaps clean-gpiops clean-sdps clean-emacps \
+		clean-qspips clean-ttcps clean-xadcps clean-iicps
+distclean-drivers: distclean-usbps distclean-dmaps distclean-gpiops distclean-sdps \
+		distclean-emacps distclean-qspips distclean-ttcps distclean-xadcps distclean-iicps
+
+clean: clean-drivers
+distclean: distclean-drivers
