@@ -3,6 +3,7 @@ CC = $(CROSS)gcc
 AS = $(CROSS)as
 LD = $(CROSS)ld
 AR = $(CROSS)ar
+SIZE = $(CROSS)size
 
 FREERTOS_ROOT ?= $(PWD)/..
 FREERTOS_SRC  ?= $(FREERTOS_ROOT)/Source
