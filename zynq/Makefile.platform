@@ -27,7 +27,7 @@ compile-$(1): $(1)
 	$(Q) ln -vf $(1) userapp.elf
 
 $(1): $(1).o $(3)
-$(1): printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
+$(1): printf-stdarg.o asm_vectors.o tick_config.o
 $(1): libfreertos.a
 $(1): $$(ZYNQ_OBJ)
 $(1): $$(DRIVERS)
