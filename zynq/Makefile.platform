@@ -234,10 +234,11 @@ ifeq ($(CONFIG_IICPS),y)
 DRIVERS += libiicps.a
 endif
 
-clean-drivers: clean-usbps clean-dmaps clean-gpiops clean-sdps clean-emacps \
-		clean-qspips clean-ttcps clean-xadcps clean-iicps
-distclean-drivers: distclean-usbps distclean-dmaps distclean-gpiops distclean-sdps \
-		distclean-emacps distclean-qspips distclean-ttcps distclean-xadcps distclean-iicps
+clean-drivers: clean-scuwdt clean-devcfg clean-uartps clean-usbps clean-dmaps clean-gpiops \
+		clean-sdps clean-emacps clean-qspips clean-ttcps clean-xadcps clean-iicps
+distclean-drivers: distclean-scuwdt distclean-devcfg distclean-uartps distclean-usbps \
+		distclean-dmaps distclean-gpiops distclean-sdps distclean-emacps distclean-qspips \
+		distclean-ttcps distclean-xadcps distclean-iicps
 
 clean: clean-drivers
 distclean: distclean-drivers
