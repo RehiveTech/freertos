@@ -11,21 +11,22 @@ LDFLAGS_EXTRA += -Xlinker --gc-sections
 FSBL ?= zedboard
 
 # Create rules to build a FreeRTOS application.
-# It accepts name of the application and its
+# It accepts name of the application, linker script
 # object dependencies.
 # Example:
 #
-#   $(eval $(call make_project,hello_world,leds_blink.o))
+#   $(eval $(call make_project,hello_world,linker.ld,leds_blink.o))
 #
 define make_project
 all: build-$(1)
+build-$(1): LDFLAGS_EXTRA += -Xlinker -T$(2)
 build-$(1): prepare-$(1) compile-$(1) finish-$(1)
 prepare-$(1):
 	$(Q) echo "Building FreeRTOS application $(1)" >&2
 compile-$(1): $(1)
 	$(Q) ln -vf $(1) userapp.elf
 
-$(1): $(1).o $(2)
+$(1): $(1).o $(3)
 $(1): printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
 $(1): libfreertos.a
 $(1): $$(ZYNQ_OBJ)
@@ -36,7 +37,7 @@ finish-$(1): BOOT.BIN
 	$(Q) $(SIZE) userapp.elf
 	$(Q) ls -l $$<
 clean-$(1):
-	$(Q) $(RM) $(1).o $(2)
+	$(Q) $(RM) $(1).o $(3)
 	$(Q) $(RM) printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
 	$(Q) $(RM) $(ZYNQ_OBJ)
 distclean-$(1): clean-$(1)
