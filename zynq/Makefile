@@ -15,7 +15,11 @@ build-test: test
 test: test.o printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o libfreertos.a
 clean-test: clean-test-zynq
 	$(RM) test.o printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
+distclean-test:
+	$(RM) test
+
 clean: clean-test
+distclean: distclean-test
 
 #####################################
 
