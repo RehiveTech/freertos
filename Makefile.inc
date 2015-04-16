@@ -5,6 +5,7 @@ LD = $(CROSS)ld
 AR = $(CROSS)ar
 SIZE = $(CROSS)size
 OBJCOPY = $(CROSS)objcopy
+Q ?= @
 
 FREERTOS_ROOT ?= $(PWD)/..
 FREERTOS_SRC  ?= $(FREERTOS_ROOT)/Source
