@@ -98,6 +98,10 @@ IICPS_OBJ  := xiicps_g.o xiicps_hw.o xiicps_intr.o xiicps_options.o xiicps_sinit
 TTCPS_OBJ  := xttcps.o xttcps_g.o xttcps_options.o xttcps_sinit.o
 XADCPS_OBJ := xadcps.o xadcps_g.o xadcps_intr.o xadcps_sinit.o
 
+CONFIG_SCUWDT ?= y
+CONFIG_DEVCFG ?= y
+CONFIG_UARTPS ?= y
+
 libscuwdt.a: $(SCUWDT_OBJ:%=$(ZYNQ_BSP)/ps7_cortexa9_0/libsrc/scuwdt_v2_0/src/%)
 	$(AR) rcs $@ $^
 clean-scuwdt:
@@ -105,7 +109,7 @@ clean-scuwdt:
 distclean-scuwdt: clean-scuwdt
 	$(RM) libscuwdt.a
 
-ifndef CONFIG_NO_SCUWDT
+ifeq ($(CONFIG_SCUWDT),y)
 DRIVERS += libscuwdt.a
 endif
 
@@ -116,7 +120,7 @@ clean-devcfg:
 distclean-devcfg: clean-devcfg
 	$(RM) libdevcfg.a
 
-ifndef CONFIG_NO_DEVCFG
+ifeq ($(CONFIG_DEVCFG),y)
 DRIVERS += libdevcfg.a
 endif
 
@@ -127,7 +131,7 @@ clean-uartps:
 distclean-uartps: clean-uartps
 	$(RM) libuartps.a
 
-ifndef CONFIG_NO_UARTPS
+ifeq ($(CONFIG_UARTPS),y)
 DRIVERS += libuartps.a
 endif
 
@@ -138,7 +142,7 @@ clean-usbps:
 distclean-usbps: clean-usbps
 	$(RM) libusbps.a
 
-ifdef CONFIG_USBPS
+ifeq ($(CONFIG_USBPS),y)
 DRIVERS += libusbps.a
 endif
 
@@ -149,7 +153,7 @@ clean-dmaps:
 distclean-dmaps: clean-dmaps
 	$(RM) libdmaps.a
 
-ifdef CONFIG_DMAPS
+ifeq ($(CONFIG_DMAPS),y)
 DRIVERS += libdmaps.a
 endif
 
@@ -160,7 +164,7 @@ clean-gpiops:
 distclean-gpiops: clean-gpiops
 	$(RM) libgpiops.a
 
-ifdef CONFIG_GPIOPS
+ifeq ($(CONFIG_GPIOPS),y)
 DRIVERS += libgpiops.a
 endif
 
@@ -171,7 +175,7 @@ clean-sdps:
 distclean-sdps: clean-sdps
 	$(RM) libsdps.a
 
-ifdef CONFIG_SDPS
+ifeq ($(CONFIG_SDPS),y)
 DRIVERS += libsdps.a
 endif
 
@@ -182,7 +186,7 @@ clean-emacps:
 distclean-emacps: clean-emacps
 	$(RM) libemacps.a
 
-ifdef CONFIG_EMACPS
+ifeq ($(CONFIG_EMACPS),y)
 DRIVERS += libemacps.a
 endif
 
@@ -193,7 +197,7 @@ clean-qspips:
 distclean-qspips: clean-qspips
 	$(RM) libqspips.a
 
-ifdef CONFIG_QSPIPS
+ifeq ($(CONFIG_QSPIPS),y)
 DRIVERS += libqspips.a
 endif
 
@@ -204,7 +208,7 @@ clean-ttcps:
 distclean-ttcps: clean-ttcps
 	$(RM) libttcps.a
 
-ifdef CONFIG_TTCPS
+ifeq ($(CONFIG_TTCPS),y)
 DRIVERS += libttcps.a
 endif
 
@@ -215,7 +219,7 @@ clean-xadcps:
 distclean-xadcps: clean-xadcps
 	$(RM) libxadcps.a
 
-ifdef CONFIG_XADCPS
+ifeq ($(CONFIG_XADCPS),y)
 DRIVERS += libxadcps.a
 endif
 
@@ -226,7 +230,7 @@ clean-iicps:
 distclean-iicps: clean-iicps
 	$(RM) libiicps.a
 
-ifdef CONFIG_IICPS
+ifeq ($(CONFIG_IICPS),y)
 DRIVERS += libiicps.a
 endif
 
