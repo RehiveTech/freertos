@@ -101,7 +101,7 @@
 #include <semphr.h>
 
 /* Xilinx includes. */
-#include "platform.h"
+#include "platform_config.h"
 #include "xparameters.h"
 #include "xscutimer.h"
 #include "xscugic.h"
