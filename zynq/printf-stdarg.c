@@ -25,7 +25,8 @@
 
 */
 
-#define putchar(c) c
+void outbyte (char);
+#define putchar(c) outbyte(c)
 
 #include <stdarg.h>
 
