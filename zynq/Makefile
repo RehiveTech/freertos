@@ -9,17 +9,40 @@ ASFLAGS_EXTRA := $(BSP_INC) -I$(ZYNQ_SRC)
 LDFLAGS_EXTRA += -Xlinker -Tlscript.ld
 LDFLAGS_EXTRA += -Xlinker --gc-sections
 
+FSBL ?= zedboard
+
 all: build-test
-build-test: test
+build-test: test.elf BOOT.BIN
 	$(SIZE) $<
 test: test.o printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o libfreertos.a
+test.elf: test
+	ln -vf $< $@
 clean-test: clean-test-zynq
 	$(RM) test.o printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
 distclean-test:
-	$(RM) test
+	$(RM) test.elf test
 
 clean: clean-test
 distclean: distclean-test
+
+BOOT.BIN: system.bif
+	bootgen -image system.bif -w on -o i $@
+system.bif: test.elf fsbl.elf
+	echo "romfile:"              > $@
+	echo "{"                    >> $@
+	echo "[bootloader]fsbl.elf" >> $@
+	echo "test.elf"             >> $@
+	echo "}"                    >> $@
+fsbl.elf: fsbl/$(FSBL).elf
+	ln -vf $< $@
+
+clean-BOOT.BIN:
+	$(RM) system.bif fsbl.elf system.mem
+distclean-BOOT.BIN: clean-BOOT.BIN
+	$(RM) BOOT.BIN
+
+clean: clean-BOOT.BIN
+distclean: distclean-BOOT.BIN
 
 #####################################
 
