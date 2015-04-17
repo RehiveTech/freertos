@@ -38,7 +38,7 @@ finish-$(1): BOOT.BIN
 	$(Q) ls -l $$<
 clean-$(1):
 	$(Q) $(RM) $(1).o $(3)
-	$(Q) $(RM) printf-stdarg.o platform.o serial.o asm_vectors.o tick_config.o
+	$(Q) $(RM) printf-stdarg.o asm_vectors.o tick_config.o
 	$(Q) $(RM) $(ZYNQ_OBJ)
 distclean-$(1): clean-$(1)
 	$(Q) $(RM) $(1) userapp.elf
