@@ -1,0 +1,105 @@
+include ../Makefile.inc
+
+SOCFPGA_SRC := $(FREERTOS_ROOT)/socfpga
+SOCFPGA_BSP := $(FREERTOS_ROOT)/socfpga/bsp
+BSP_INC     := -I$(SOCFPGA_BSP)/SoCSupport/include -I$(SOCFPGA_BSP)/HardwareLibrary/include
+
+CFLAGS_EXTRA  := $(BSP_INC) -I$(SOCFPGA_SRC)
+CFLAGS_EXTRA  += -DALT_INT_PROVISION_VECTOR_SUPPORT=0
+LDFLAGS_EXTRA := -Xlinker --gc-sections
+LDFLAGS_EXTRA += -Xlinker --defsym=__cs3_isr_irq=FreeRTOS_IRQ_Handler
+LDFLAGS_EXTRA += -Xlinker --defsym=__cs3_isr_swi=FreeRTOS_SWI_Handler
+
+define make_project
+all: build-$(1)
+build-$(1): LDFLAGS_EXTRA += -Xlinker -T$(2)
+build-$(1): prepare-$(1) compile-$(1) finish-$(1)
+prepare-$(1):
+	$(Q) echo "Building FreeRTOS application $(1)" >&2
+compile-$(1): $(1)
+
+$(1): $(1).o $(3)
+$(1): printf-stdarg.o
+$(1): libfreertos.a
+$(1): $$(SOCFPGA_OBJ)
+$(1): $$(DRIVERS)
+
+finish-$(1):
+	$(Q) echo "Build of $(1) successful" >&2
+	$(Q) $(SIZE) $(1)
+clean-$(1):
+	$(Q) $(RM) $(1).o $(3)
+	$(Q) $(RM) printf-stdarg.o
+	$(Q) $(RM) $(SOCFPGA_OBJ)
+distclean-$(1): clean-$(1)
+	$(Q) $(RM) $(1)
+
+clean: clean-$(1)
+distclean: distclean-$(1)
+endef
+
+SOCFPGA_CORE_OBJ := cache_support.o fpga_support.o mmu_support.o uart0_support.o
+SOCFPGA_OBJ := $(SOCFPGA_CORE_OBJ:%=$(SOCFPGA_BSP)/SoCSupport/%)
+
+ALT_16550_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_16550_uart.o
+ALT_ADDRESS_SPACE_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_address_space.o
+ALT_BRIDGE_MGR_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_bridge_manager.o
+ALT_CACHE_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_cache.o
+ALT_CLK_MGR_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_clock_manager.o
+ALT_DMA_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_dma_program.o $(SOCFPGA_BSP)/HardwareLibrary/alt_dma.o
+ALT_ECC_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_ecc.o
+ALT_FPGA_MGR_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_fpga_manager.o
+ALT_GPIO_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_generalpurpose_io.o
+ALT_GTMR_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_globaltmr.o
+ALT_I2C_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_i2c.o
+ALT_INTERRUPT_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_interrupt.o
+ALT_MMU_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_mmu.o
+ALT_NAND_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_nand.o
+ALT_QSPI_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_qspi.o
+ALT_RESET_MGR_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_reset_manager.o
+ALT_SDMMC_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_sdmmc.o
+ALT_SPI_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_spi.o
+ALT_SYSTEM_MGR_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_system_manager.o
+ALT_TIMERS_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_timers.o
+ALT_WATCHDOG_OBJ := $(SOCFPGA_BSP)/HardwareLibrary/alt_watchdog.o
+
+define make_driver
+lib$(1).a: $(2)
+	$(Q) $(AR) rcs $$@ $$^
+clean-$(1):
+	$(Q) $(RM) $(2)
+distclean-$(1): clean-$(1)
+	$(Q) $(RM) lib$(1).a
+
+clean-drivers: clean-$(1)
+distclean-drivers: distclean-$(1)
+
+ifeq ($(strip $(3)),y)
+DRIVERS += lib$(1).a
+endif
+endef
+
+$(eval $(call make_driver,alt_16550,$(ALT_16550_OBJ),$(CONFIG_ALT_16550)))
+$(eval $(call make_driver,alt_addrspace,$(ALT_ADDRESS_SPACE_OBJ),$(CONFIG_ALT_ADDRSPACE)))
+$(eval $(call make_driver,alt_bridgemgr,$(ALT_BRIDGE_MGR_OBJ),$(CONFIG_ALT_BRIDGEMGR)))
+$(eval $(call make_driver,alt_cache,$(ALT_CACHE_OBJ),$(CONFIG_ALT_CACHE)))
+$(eval $(call make_driver,alt_clkmgr,$(ALT_CLK_MGR_OBJ),$(CONFIG_ALT_CLKMGR)))
+$(eval $(call make_driver,alt_dma,$(ALT_DMA_OBJ),$(CONFIG_ALT_DMA)))
+$(eval $(call make_driver,alt_ecc,$(ALT_ECC_OBJ),$(CONFIG_ALT_ECC)))
+$(eval $(call make_driver,alt_fpgamgr,$(ALT_FPGA_MGR_OBJ),$(CONFIG_ALT_FPGAMGR)))
+$(eval $(call make_driver,alt_gpio,$(ALT_GPIO_OBJ),$(CONFIG_ALT_GPIO)))
+$(eval $(call make_driver,alt_gtmr,$(ALT_GTMR_OBJ),$(CONFIG_ALT_GTMR)))
+$(eval $(call make_driver,alt_i2c,$(ALT_I2C_OBJ),$(CONFIG_ALT_I2C)))
+$(eval $(call make_driver,alt_interrupt,$(ALT_INTERRUPT_OBJ),$(CONFIG_ALT_INTERRUPT)))
+$(eval $(call make_driver,alt_mmu,$(ALT_MMU_OBJ),$(CONFIG_ALT_MMU)))
+$(eval $(call make_driver,alt_nand,$(ALT_NAND_OBJ),$(CONFIG_ALT_NAND)))
+$(eval $(call make_driver,alt_qspi,$(ALT_QSPI_OBJ),$(CONFIG_ALT_QSPI)))
+$(eval $(call make_driver,alt_resetmgr,$(ALT_RESET_MGR_OBJ),$(CONFIG_ALT_RESETMGR)))
+$(eval $(call make_driver,alt_sdmmc,$(ALT_SDMMC_OBJ),$(CONFIG_ALT_SDMMC)))
+$(eval $(call make_driver,alt_spi,$(ALT_SPI_OBJ),$(CONFIG_ALT_SPI)))
+$(eval $(call make_driver,alt_systemmgr,$(ALT_SYSTEM_MGR_OBJ),$(CONFIG_ALT_SYSTEMMGR)))
+$(eval $(call make_driver,alt_timers,$(ALT_TIMERS_OBJ),$(CONFIG_ALT_TIMERS)))
+$(eval $(call make_driver,alt_watchdog,$(ALT_WATCHDOG_OBJ),$(CONFIG_ALT_WATCHDOG)))
+
+clean: clean-drivers
+distclean: distclean-drivers
