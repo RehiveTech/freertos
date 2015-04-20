@@ -129,7 +129,7 @@ uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
 #define configUSE_TICK_HOOK                     1
 #define configMAX_PRIORITIES                    ( 7 )
 #define configMINIMAL_STACK_SIZE                ( ( unsigned short ) 200 )
-#define configTOTAL_HEAP_SIZE                   ( 50 * 1024 )
+#define configTOTAL_HEAP_SIZE                   ( 1024 * 1024 )
 #define configMAX_TASK_NAME_LEN                 ( 10 )
 #define configUSE_TRACE_FACILITY                1
 #define configUSE_16_BIT_TICKS                  0
