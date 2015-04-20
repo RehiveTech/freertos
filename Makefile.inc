@@ -52,4 +52,4 @@ distclean: clean distclean-libfreertos
 distclean-libfreertos:
 	$(Q) $(RM) libfreertos.a
 
-include ../$(PLAT)/Makefile.platform
+include $(FREERTOS_ROOT)/$(PLAT)/Makefile.platform

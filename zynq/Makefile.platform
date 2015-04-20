@@ -25,8 +25,8 @@ compile-$(1): $(1)
 	$(Q) ln -vf $(1) userapp.elf
 
 $(1): $(1).o $(3)
-$(1): ../zynq/printf-stdarg.o ../zynq/asm_vectors.o ../zynq/tick_config.o
-$(1): ../zynq/platform_dependent.o
+$(1): $(FREERTOS_ROOT)/zynq/printf-stdarg.o $(FREERTOS_ROOT)/zynq/asm_vectors.o $(FREERTOS_ROOT)/zynq/tick_config.o
+$(1): $(FREERTOS_ROOT)/zynq/platform_dependent.o
 $(1): libfreertos.a
 $(1): $$(ZYNQ_OBJ)
 $(1): $$(DRIVERS)
@@ -37,8 +37,8 @@ finish-$(1): BOOT.BIN
 	$(Q) ls -l $$<
 clean-$(1):
 	$(Q) $(RM) $(1).o $(3)
-	$(Q) $(RM) ../zynq/printf-stdarg.o ../zynq/asm_vectors.o ../zynq/tick_config.o
-	$(Q) $(RM) ../zynq/platform_dependent.o
+	$(Q) $(RM) $(FREERTOS_ROOT)/zynq/printf-stdarg.o $(FREERTOS_ROOT)/zynq/asm_vectors.o $(FREERTOS_ROOT)/zynq/tick_config.o
+	$(Q) $(RM) $(FREERTOS_ROOT)/zynq/platform_dependent.o
 	$(Q) $(RM) $(ZYNQ_OBJ)
 distclean-$(1): clean-$(1)
 	$(Q) $(RM) $(1) userapp.elf
@@ -55,7 +55,7 @@ system.bif: userapp.elf fsbl.elf
 	$(Q) echo "[bootloader]fsbl.elf" >> $@
 	$(Q) echo "userapp.elf"          >> $@
 	$(Q) echo "}"                    >> $@
-fsbl.elf: ../zynq/fsbl/$(FSBL).elf
+fsbl.elf: $(FREERTOS_ROOT)/zynq/fsbl/$(FSBL).elf
 	$(Q) ln -vf $< $@
 
 clean-BOOT.BIN:
