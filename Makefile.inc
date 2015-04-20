@@ -6,6 +6,7 @@ AR = $(CROSS)ar
 SIZE = $(CROSS)size
 OBJCOPY = $(CROSS)objcopy
 Q ?= @
+PLAT ?= zynq
 
 FREERTOS_ROOT ?= $(PWD)/..
 FREERTOS_SRC  ?= $(FREERTOS_ROOT)/Source
@@ -50,3 +51,5 @@ clean-libfreertos:
 distclean: clean distclean-libfreertos
 distclean-libfreertos:
 	$(RM) libfreertos.a
+
+include ../$(PLAT)/Makefile.platform
