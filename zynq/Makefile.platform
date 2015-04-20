@@ -7,6 +7,7 @@ ASFLAGS_EXTRA := $(BSP_INC) -I$(ZYNQ_SRC)
 LDFLAGS_EXTRA += -Xlinker --gc-sections
 
 FSBL ?= zedboard
+DESIGN_FPGA ?=
 
 # Create rules to build a FreeRTOS application.
 # It accepts name of the application, linker script
@@ -49,10 +50,11 @@ endef
 
 BOOT.BIN: system.bif
 	$(Q) bootgen -image system.bif -w on -o i $@
-system.bif: userapp.elf fsbl.elf
+system.bif: userapp.elf fsbl.elf $(DESIGN_FPGA)
 	$(Q) echo "romfile:"              > $@
 	$(Q) echo "{"                    >> $@
 	$(Q) echo "[bootloader]fsbl.elf" >> $@
+	$(Q) test -f "$(DESIGN_FPGA)" && echo "$(DESIGN_FPGA)" >> $@
 	$(Q) echo "userapp.elf"          >> $@
 	$(Q) echo "}"                    >> $@
 fsbl.elf: $(FREERTOS_ROOT)/zynq/fsbl/$(FSBL).elf
