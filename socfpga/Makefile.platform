@@ -19,7 +19,8 @@ prepare-$(1):
 compile-$(1): $(1)
 
 $(1): $(1).o $(3)
-$(1): printf-stdarg.o
+$(1): ../socfpga/printf-stdarg.o
+$(1): ../socfpga/platform_dependent.o
 $(1): libfreertos.a
 $(1): $$(SOCFPGA_OBJ)
 $(1): $$(DRIVERS)
@@ -29,7 +30,8 @@ finish-$(1):
 	$(Q) $(SIZE) $(1)
 clean-$(1):
 	$(Q) $(RM) $(1).o $(3)
-	$(Q) $(RM) printf-stdarg.o
+	$(Q) $(RM) ../socfpga/printf-stdarg.o
+	$(Q) $(RM) ../socfpga/platform_dependent.o
 	$(Q) $(RM) $(SOCFPGA_OBJ)
 distclean-$(1): clean-$(1)
 	$(Q) $(RM) $(1)

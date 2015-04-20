@@ -93,31 +93,13 @@
 
 /* Standard includes. */
 #include <stdio.h>
-#include <limits.h>
 
 /* Scheduler include files. */
 #include <FreeRTOS.h>
 #include <task.h>
 #include <semphr.h>
 
-/* Xilinx includes. */
-#include "xparameters.h"
-#include "xscutimer.h"
-#include "xscugic.h"
-#include "xil_exception.h"
-
-/*
- * Configure the hardware as necessary to run this demo.
- */
-static void prvSetupHardware( void );
-
-/*
- * The Xilinx projects use a BSP that do not allow the start up code to be
- * altered easily.  Therefore the vector table used by FreeRTOS is defined in
- * FreeRTOS_asm_vectors.S, which is part of this project.  Switch to use the
- * FreeRTOS vector table.
- */
-extern void vPortInstallFreeRTOSVectorTable( void );
+#include "platform_dependent.h"
 
 /* Prototypes for the standard FreeRTOS callback/hook functions implemented
 within this file. */
@@ -126,20 +108,11 @@ void vApplicationIdleHook( void );
 void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName );
 void vApplicationTickHook( void );
 
-/* The private watchdog is used as the timer that generates run time
-stats.  This frequency means it will overflow quite quickly. */
-XScuWdt xWatchDogInstance;
-
-/* The interrupt controller is initialised in this file, and made available to
-other modules. */
-XScuGic xInterruptController;
-
 int main( void )
 {
-	/* Configure the hardware ready to run the demo. */
-	prvSetupHardware();
+	platSetupHardware();
 
-	xil_printf("Started Successfully\n\r");
+	printf("Started Successfully\n\r");
 	while(1)
 		portNOP();
 
@@ -147,36 +120,6 @@ int main( void )
 	return 0;
 }
 
-static void prvSetupHardware( void )
-{
-	BaseType_t xStatus;
-	XScuGic_Config *pxGICConfig;
-
-	/* Ensure no interrupts execute while the scheduler is in an inconsistent
-	state.  Interrupts are automatically enabled when the scheduler is
-	started. */
-	portDISABLE_INTERRUPTS();
-
-	/* Obtain the configuration of the GIC. */
-	pxGICConfig = XScuGic_LookupConfig( XPAR_SCUGIC_SINGLE_DEVICE_ID );
-
-	/* Sanity check the FreeRTOSConfig.h settings are correct for the
-	hardware. */
-	configASSERT( pxGICConfig );
-	configASSERT( pxGICConfig->CpuBaseAddress == ( configINTERRUPT_CONTROLLER_BASE_ADDRESS + configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET ) );
-	configASSERT( pxGICConfig->DistBaseAddress == configINTERRUPT_CONTROLLER_BASE_ADDRESS );
-
-	/* Install a default handler for each GIC interrupt. */
-	xStatus = XScuGic_CfgInitialize( &xInterruptController, pxGICConfig, pxGICConfig->CpuBaseAddress );
-	configASSERT( xStatus == XST_SUCCESS );
-	( void ) xStatus; /* Remove compiler warning if configASSERT() is not defined. */
-
-	/* The Xilinx projects use a BSP that do not allow the start up code to be
-	altered easily.  Therefore the vector table used by FreeRTOS is defined in
-	FreeRTOS_asm_vectors.S, which is part of this project.  Switch to use the
-	FreeRTOS vector table. */
-	vPortInstallFreeRTOSVectorTable();
-}
 
 void vApplicationMallocFailedHook( void )
 {
@@ -239,22 +182,4 @@ void vAssertCalled( const char * pcFile, unsigned long ulLine )
 
 void vApplicationTickHook( void )
 {
-}
-
-void vInitialiseTimerForRunTimeStats( void )
-{
-	XScuWdt_Config *pxWatchDogInstance;
-	uint32_t ulValue;
-	const uint32_t ulMaxDivisor = 0xff, ulDivisorShift = 0x08;
-
-	pxWatchDogInstance = XScuWdt_LookupConfig( XPAR_SCUWDT_0_DEVICE_ID );
-	XScuWdt_CfgInitialize( &xWatchDogInstance, pxWatchDogInstance, pxWatchDogInstance->BaseAddr );
-
-	ulValue = XScuWdt_GetControlReg( &xWatchDogInstance );
-	ulValue |= ulMaxDivisor << ulDivisorShift;
-	XScuWdt_SetControlReg( &xWatchDogInstance, ulValue );
-
-	XScuWdt_LoadWdt( &xWatchDogInstance, UINT_MAX );
-	XScuWdt_SetTimerMode( &xWatchDogInstance );
-	XScuWdt_Start( &xWatchDogInstance );
 }
