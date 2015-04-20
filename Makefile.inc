@@ -23,33 +23,33 @@ FREERTOS_OBJ   := croutine.o event_groups.o list.o queue.o tasks.o timers.o
 
 all:
 libfreertos.a: $(FREERTOS_OBJ) port.o portASM.o
-	$(AR) rcs $@ $^
+	$(Q) $(AR) rcs $@ $^
 
 define build_obj
 $(1): $(2)
-	$$(CC) $$(CFLAGS) -c -o $$@ $$^
+	$(Q) $$(CC) $$(CFLAGS) -c -o $$@ $$^
 endef
 
 $(foreach obj,$(FREERTOS_OBJ),$(eval $(call build_obj,$(obj),$(FREERTOS_SRC)/$(obj:%.o=%.c))))
 
 heap_%.o: $(FREERTOS_SRC)/portable/MemMang/heap_%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(Q) $(CC) $(CFLAGS) -c -o $@ $<
 port.o: $(FREERTOS_SRC)/portable/GCC/ARM_CA9/port.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(Q) $(CC) $(CFLAGS) -c -o $@ $<
 portASM.o: $(FREERTOS_SRC)/portable/GCC/ARM_CA9/portASM.S
-	$(AS) $(ASFLAGS) -c -o $@ $<
+	$(Q) $(AS) $(ASFLAGS) -c -o $@ $<
 
 %.bin: %
-	$(OBJCOPY) -O binary $< $@
+	$(Q) $(OBJCOPY) -O binary $< $@
 %.bin: %.elf
-	$(OBJCOPY) -O binary $< $@
+	$(Q) $(OBJCOPY) -O binary $< $@
 
 clean: clean-libfreertos
 clean-libfreertos:
-	$(RM) $(FREERTOS_OBJ)
-	$(RM) port.o portASM.o
+	$(Q) $(RM) $(FREERTOS_OBJ)
+	$(Q) $(RM) port.o portASM.o
 distclean: clean distclean-libfreertos
 distclean-libfreertos:
-	$(RM) libfreertos.a
+	$(Q) $(RM) libfreertos.a
 
 include ../$(PLAT)/Makefile.platform
