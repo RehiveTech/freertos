@@ -18,7 +18,7 @@ DESIGN_FPGA ?=
 #
 define make_project
 all: build-$(1)
-build-$(1): LDFLAGS_EXTRA += -Xlinker -T$(2)
+build-$(1): LDFLAGS_EXTRA += -Xlinker -T$(2) -Xlinker -Map=$(1).map
 build-$(1): prepare-$(1) compile-$(1) finish-$(1)
 prepare-$(1):
 	$(Q) echo "Building FreeRTOS application $(1)" >&2
