@@ -59,3 +59,29 @@ void vInitialiseTimerForRunTimeStats( void )
 	XScuWdt_SetTimerMode( &xWatchDogInstance );
 	XScuWdt_Start( &xWatchDogInstance );
 }
+
+#define TLB_ATTR_COMMON    0x041e2
+#define TLB_ATTR_SHAREABLE 0x10000 /* S = b1 */
+#define TLB_ATTR_NONCACHE  0x00000 /* TEX(1:0) = b00, C = b0, B = b0 */
+#define TLB_ATTR_FULLACC   0x00C00 /* AP(2) = b0, AP(1:0) = b11 */
+
+int platInitCoherentMemory(uint8_t *m, size_t size)
+{
+	size_t base = (size_t) m;
+	const size_t end  = base + __plat_coherent_align(size);
+
+	configASSERT((base & __PLAT_COHERENT_GRANULARITY_MASK) == 0);
+	configASSERT((end  & __PLAT_COHERENT_GRANULARITY_MASK) == 0);
+
+	/* FIXME: what about clearing zeros? */
+	const uint32_t attr_coherent = TLB_ATTR_COMMON
+		| TLB_ATTR_SHAREABLE | TLB_ATTR_NONCACHE | TLB_ATTR_FULLACC;
+
+	while(base < end) {
+		Xil_SetTlbAttributes((uint32_t) base, attr_coherent);
+		base += __PLAT_COHERENT_GRANULARITY_SIZE;
+	}
+
+	memset(m, 0, __plat_coherent_align(size));
+	return 0;
+}

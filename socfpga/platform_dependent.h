@@ -17,4 +17,13 @@
 
 void platSetupHardware(void);
 
+#define PLAT_DECLARE_COHERENT_MEM(name, size) \
+	uint8_t name[(size)]
+
+static inline
+int platInitCoherentMemory(uint8_t *m, size_t size)
+{
+	return -1;
+}
+
 #endif
