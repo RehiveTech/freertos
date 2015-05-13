@@ -23,7 +23,7 @@ build-$(1): prepare-$(1) compile-$(1) finish-$(1)
 prepare-$(1):
 	$(Q) echo "Building FreeRTOS application $(1)" >&2
 compile-$(1): $(1)
-	$(Q) ln -vf $(1) userapp.elf
+	$(Q) ln -vf $(1) $(1).elf
 
 $(1): $(1).o $(3)
 $(1): $(FREERTOS_ROOT)/zynq/printf-stdarg.o $(FREERTOS_ROOT)/zynq/asm_vectors.o $(FREERTOS_ROOT)/zynq/tick_config.o
@@ -32,43 +32,40 @@ $(1): libfreertos.a
 $(1): $$(ZYNQ_OBJ)
 $(1): $$(DRIVERS)
 
-finish-$(1): BOOT.BIN
+$(1).BOOT.BIN: $(1).bif
+	$(Q) bootgen -image $(1).bif -w on -o i $$@
+$(1).bif: $(1).elf fsbl.elf $$(DESIGN_FPGA)
+	$(Q) echo "romfile:"              > $$@
+	$(Q) echo "{"                    >> $$@
+	$(Q) echo "[bootloader]fsbl.elf" >> $$@
+	$(Q) test -f "$$(DESIGN_FPGA)"    \
+		&& echo "$$(DESIGN_FPGA)" >> $$@ \
+		|| echo "No design for FPGA has been specified (DESIGN_FPGA)" >&2
+	$(Q) echo "$(1).elf"             >> $$@
+	$(Q) echo "}"                    >> $$@
+
+finish-$(1): $(1).BOOT.BIN
 	$(Q) echo "Build of $(1) successful" >&2
-	$(Q) $(SIZE) userapp.elf
+	$(Q) $(SIZE) $(1).elf
 	$(Q) ls -l $$<
 clean-$(1):
 	$(Q) $(RM) $(1).o $(3)
 	$(Q) $(RM) $(FREERTOS_ROOT)/zynq/printf-stdarg.o $(FREERTOS_ROOT)/zynq/asm_vectors.o $(FREERTOS_ROOT)/zynq/tick_config.o
 	$(Q) $(RM) $(FREERTOS_ROOT)/zynq/platform_dependent.o
 	$(Q) $(RM) $(ZYNQ_OBJ)
+	$(Q) $(RM) $(1).bif
 distclean-$(1): clean-$(1)
-	$(Q) $(RM) $(1) $(1).map userapp.elf
+	$(Q) $(RM) $(1) $(1).map $(1).elf $(1).BOOT.BIN
 
 clean: clean-$(1)
 distclean: distclean-$(1)
 endef
-
-BOOT.BIN: system.bif
-	$(Q) bootgen -image system.bif -w on -o i $@
-system.bif: userapp.elf fsbl.elf $(DESIGN_FPGA)
-	$(Q) echo "romfile:"              > $@
-	$(Q) echo "{"                    >> $@
-	$(Q) echo "[bootloader]fsbl.elf" >> $@
-	$(Q) test -f "$(DESIGN_FPGA)"    \
-		&& echo "$(DESIGN_FPGA)" >> $@ \
-		|| echo "No design for FPGA has been specified (DESIGN_FPGA)" >&2
-	$(Q) echo "userapp.elf"          >> $@
-	$(Q) echo "}"                    >> $@
+	
 fsbl.elf: $(FREERTOS_ROOT)/zynq/fsbl/$(FSBL).elf
 	$(Q) ln -vf $< $@
-
-clean-BOOT.BIN:
-	$(Q) $(RM) system.bif fsbl.elf system.mem
-distclean-BOOT.BIN: clean-BOOT.BIN
-	$(Q) $(RM) BOOT.BIN
-
-clean: clean-BOOT.BIN
-distclean: distclean-BOOT.BIN
+clean-fsbl.elf:
+	$(Q) $(RM) fsbl.elf
+clean: clean-fsbl.elf
 
 #####################################
 
