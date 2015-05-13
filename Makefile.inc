@@ -15,7 +15,7 @@ ASFLAGS_port   := -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-vfpv4 -mfloat-abi=so
 ASFLAGS         = $(ASFLAGS_port) $(ASFLAGS_EXTRA)
 CFLAGS_include := -I$(FREERTOS_SRC)/include -I$(FREERTOS_SRC)/portable/GCC/ARM_CA9 -I$(FREERTOS_ROOT)/Common/include
 CFLAGS_port    := -march=armv7-a -mtune=cortex-a9 -mfpu=neon-vfpv4 -mfloat-abi=softfp -O2 -g
-CFLAGS          = -std=gnu99 $(CFLAGS_include) $(CFLAGS_port) $(CFLAGS_EXTRA)
+CFLAGS          = -std=gnu99 -fno-short-enums $(CFLAGS_include) $(CFLAGS_port) $(CFLAGS_EXTRA)
 LDFLAGS_port   := -march=armv7-a -mtune=cortex-a9 -mfpu=neon-vfpv4 -mfloat-abi=softfp -O2 -g
 LDFLAGS         = -std=gnu99 $(LDFLAGS_port) $(LDFLAGS_EXTRA)
 
