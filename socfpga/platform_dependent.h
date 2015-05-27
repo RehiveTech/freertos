@@ -14,6 +14,9 @@
 #include "alt_address_space.h"
 #include "mmu_support.h"
 #include "cache_support.h"
+#include "alt_cache.h"
+
+#define L1_CACHE_LINE_SIZE ALT_CACHE_LINE_SIZE
 
 void platSetupHardware(void);
 

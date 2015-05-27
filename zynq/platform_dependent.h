@@ -12,6 +12,8 @@
 #include "xil_exception.h"
 #include "xil_mmu.h"
 
+#define L1_CACHE_LINE_SIZE 32
+
 void platSetupHardware(void);
 
 #define __PLAT_COHERENT_GRANULARITY_SIZE (0x100000)
